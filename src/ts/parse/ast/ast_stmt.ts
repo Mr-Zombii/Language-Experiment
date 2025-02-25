@@ -66,3 +66,13 @@ export class FunctionDeclarationStmt implements Stmt {
     }
 
 }
+
+export class ReturnStmt implements Stmt {
+
+    public value: Expr;
+
+    constructor(value: Expr) {
+        this.value = value;
+    }
+
+}

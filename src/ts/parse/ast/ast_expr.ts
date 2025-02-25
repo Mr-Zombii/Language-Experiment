@@ -133,100 +133,80 @@ export class IdentifierExpr implements Expr {
 
 }
 
-export class Integer8Expr implements Expr {
+export class StringExpr implements Expr {
 
-    public value: number;
+    public value: string;
 
-    constructor(value: number) {
-        if (!(value <= 127 && value >= -128)) throw new Error("Integer 8 is out of range");
+    constructor(value: string) {
         this.value = value;
     }
 
 }
 
-export class Integer16Expr implements Expr {
-
-    public value: number;
-
-    constructor(value: number) {
-        if (!(value <= 32767 && value >= -32768)) throw new Error("Integer 16 is out of range");
-        this.value = value;
-    }
-
-}
-
-export class Integer32Expr implements Expr {
-
-    public value: number;
-
-    constructor(value: number) {
-        if (!(value <= 2_147_483_647 && value >= -2_147_483_648)) throw new Error("Integer 32 is out of range");
-        this.value = value;
-    }
-
-}
-
-export class Integer64Expr implements Expr {
+export class IntegerExpr implements Expr {
 
     public value: BigInt;
 
-    static max: BigInt = 9_223_372_036_854_775_807n;
-    static min: BigInt = -9_223_372_036_854_775_808n;
+    static max8: BigInt = 127n;
+    static min8: BigInt = -128n;
+
+    static max16: BigInt = 32767n;
+    static min16: BigInt = -32768n;
+
+    static max32: BigInt = 2_147_483_647n;
+    static min32: BigInt = -2_147_483_648n;
+
+    static max64: BigInt = 9_223_372_036_854_775_807n;
+    static min64: BigInt = -9_223_372_036_854_775_808n;
+
+    static max8u: BigInt = 255n;
+    static max16u: BigInt = 65_535n;
+    static max32u: BigInt = 4_294_967_295n;
+    static max64u: BigInt = 18_446_744_073_709_551_615n;
 
     constructor(value: BigInt) {
-        if (!(value <= Integer64Expr.max && value >= Integer64Expr.min)) throw new Error("Integer 64 is out of range");
         this.value = value;
+    }
+
+    // Signed Checks
+
+    public isI64(): boolean {
+        return this.value <= IntegerExpr.max64 && this.value >= IntegerExpr.min64;
+    }
+
+    public isI32(): boolean {
+        return this.value <= IntegerExpr.max32 && this.value >= IntegerExpr.min32;
+    }
+
+    public isI16(): boolean {
+        return this.value <= IntegerExpr.max16 && this.value >= IntegerExpr.min16;
+    }
+
+    public isI8(): boolean {
+        return this.value <= IntegerExpr.max8 && this.value >= IntegerExpr.min8;
+    }
+
+    // Unsigned Checks
+
+    public isU64(): boolean {
+        return this.value <= IntegerExpr.max64u && this.value >= (0n as BigInt);
+    }
+
+    public isU32(): boolean {
+        return this.value <= IntegerExpr.max32u && this.value >= (0n as BigInt);
+    }
+
+    public isU16(): boolean {
+        return this.value <= IntegerExpr.max16u && this.value >= (0n as BigInt);
+    }
+
+    public isU8(): boolean {
+        return this.value <= IntegerExpr.max8u && this.value >= (0n as BigInt);
     }
 
 }
 
-export class UnsignedInteger8Expr implements Expr {
-
-    public value: number;
-
-    constructor(value: number) {
-        if (!(value <= 255 && value >= 0)) throw new Error("Unsigned Integer 8 is out of range");
-        this.value = value;
-    }
-
-}
-
-export class UnsignedInteger16Expr implements Expr {
-
-    public value: number;
-
-    constructor(value: number) {
-        if (!(value <= 65_535 && value >= 0)) throw new Error("Unsigned Integer 16 is out of range");
-        this.value = value;
-    }
-
-}
-
-export class UnsignedInteger32Expr implements Expr {
-
-    public value: BigInt;
-
-    constructor(value: BigInt) {
-        if (!(value <= 4_294_967_295n && value >= 0)) throw new Error("Unsigned Integer 32 is out of range");
-        this.value = value;
-    }
-
-}
-
-export class UnsignedInteger64Expr implements Expr {
-
-    public value: BigInt;
-
-    static max: BigInt = 18_446_744_073_709_551_615;
-
-    constructor(value: BigInt) {
-        if (!(value <= UnsignedInteger64Expr.max && value >= 0)) throw new Error("Unsigned Integer 64 is out of range");
-        this.value = value;
-    }
-
-}
-
-export class Float32Expr implements Expr {
+export class FloatExpr implements Expr {
 
     public value: number;
 

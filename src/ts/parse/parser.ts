@@ -1,5 +1,13 @@
 import {Token} from "../lex/token";
-import {BlockStmt, ExprStmt, FunctionDeclarationStmt, Stmt, VarDeclarationStmt, VarListStmt} from "./ast/ast_stmt";
+import {
+    BlockStmt,
+    ExprStmt,
+    FunctionDeclarationStmt,
+    ReturnStmt,
+    Stmt,
+    VarDeclarationStmt,
+    VarListStmt
+} from "./ast/ast_stmt";
 import {TokenType} from "../lex/token_type";
 import {ArrayType, PairType, Type} from "./ast/ast_types";
 import {
@@ -8,12 +16,12 @@ import {
     CallExpr,
     EqualityExpr,
     ExponentialExpr,
-    Expr,
-    IdentifierExpr,
+    Expr, FloatExpr,
+    IdentifierExpr, IntegerExpr,
     MemberExpr,
     MultiplicativeExpr,
     NewInstanceExpr,
-    RelationalExpr
+    RelationalExpr, StringExpr
 } from "./ast/ast_expr";
 import {Pair} from "../util";
 
@@ -161,10 +169,19 @@ export default class Parser {
             case TokenType.PAIR:
             case TokenType.ARRAY:
             case TokenType.T_STRING:
+                return this.parseTypeVar();
 
             // Identifier - Potential Type
             case TokenType.IDENTIFIER:
-                return this.parseTypeVar();
+                let i = this.ptr;
+                try {
+                    return this.parseTypeVar()
+                } catch (e) {
+                    this.ptr = i;
+                    const expr = new ExprStmt(this.parseExpression());
+                    this.expect(TokenType.SEMI_COLON);
+                    return expr;
+                }
 
             case TokenType.CONST:
                 this.expect(TokenType.CONST);
@@ -172,6 +189,10 @@ export default class Parser {
 
             case TokenType.FUNCTION:
                 return this.parseFunction();
+
+            case TokenType.RETURN:
+                this.expect(TokenType.RETURN);
+                return new ReturnStmt(this.parseExpression());
 
             default:
                 const expr = new ExprStmt(this.parseExpression());
@@ -328,6 +349,8 @@ export default class Parser {
         return new FunctionDeclarationStmt(name, params, type, block);
     }
 
+//    private parseStruct(): Stmt {}
+
     // Expression Section
     private parseExpression(): Expr {
         const left = this.parseEquality();
@@ -464,14 +487,16 @@ export default class Parser {
         params.push(this.parseExpression());
 
 
-        while(this.token().type == TokenType.COMMA)
+        while(this.token().type == TokenType.COMMA){
+            this.expect(TokenType.COMMA);
             params.push(this.parseExpression());
+        }
 
         this.expect(TokenType.C_PAREN);
         return params;
     }
 
-    private parsePrimary() {
+    private parsePrimary(): Expr {
         switch (this.token().type) {
             case TokenType.O_PAREN:
                 this.expect(TokenType.O_PAREN);
@@ -483,6 +508,18 @@ export default class Parser {
                 const type: Type = this.parseType();
                 const args: Expr[] = this.parseArgs();
                 return new NewInstanceExpr(type, args);
+            case TokenType.IDENTIFIER:
+                const idTok: Token = this.expect(TokenType.IDENTIFIER);
+                return new IdentifierExpr(idTok.value);
+            case TokenType.INT:
+                const intTok: Token = this.expect(TokenType.INT);
+                return new IntegerExpr(BigInt(intTok.value));
+            case TokenType.FLOAT:
+                const floatTok: Token = this.expect(TokenType.FLOAT);
+                return new FloatExpr(parseFloat(floatTok.value));
+            case TokenType.STRING:
+                const stringTok: Token = this.expect(TokenType.STRING);
+                return new StringExpr(stringTok.value);
             default:
                 throw new Error(`Unknown Token: "${this.token().value}" type: "${this.token().type}"`);
         }

@@ -8,6 +8,7 @@ const i32 a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, q, t, u, v, w, x
 
 fn main(array<string> args) -> string {
     const i8 a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, q, t, u, v, w, x, y, z = 1;
+    print(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, q, t, u, v, w, x, y, z, 1, 2 ^ 2, 3 + 2, 4 * 2, 5 / 2, 6.1, 7, 8.1, 9, 10.1);
 }
 `);
 lex.tokenize();
