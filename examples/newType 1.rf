@@ -1,0 +1,123 @@
+class Vector7 {
+
+    float x, y, z, w, z, b, c;
+
+    Vector7(float x, float y, float z, float w, float a, float b, float c) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+        this.a = a;
+        this.b = b;
+        this.c = c;
+    }
+
+    Vector7(int x, int y, int z, int w, int a, int b, int c) {
+        this.x = x.asFloat();
+        this.y = y.asFloat();
+        this.z = z.asFloat();
+        this.w = w.asFloat();
+        this.a = a.asFloat();
+        this.b = b.asFloat();
+        this.c = c.asFloat();
+    }
+
+    static Vector7 __add__(Vector7 vec1, float num) {
+        return __add__(vec1, new Vector7(num, num, num, num, num, num, num))
+    }
+
+    static Vector7 __add__(Vector7 vec1, int num) {
+        return __add__(vec1, new Vector7(num, num, num, num, num, num, num))
+    }
+
+    static Vector7 __add__(Vector7 vec1, Vector7 vec2) {
+        float x = vec1.x + vec2.x;
+        float y = vec1.y + vec2.y;
+        float z = vec1.z + vec2.z;
+        float w = vec1.w + vec2.w;
+        float a = vec1.a + vec2.a;
+        float b = vec1.b + vec2.b;
+        float c = vec1.c + vec2.c;
+
+        return new Vector7(x, y, z, w, a, b, c);
+    }
+
+    static Vector7 __sub__(Vector7 vec1, float num) {   
+        return __sub__(vec1, new Vector7(num, num, num, num, num, num, num))
+    }
+
+    static Vector7 __sub__(Vector7 vec1, int num) {
+        return __sub__(vec1, new Vector7(num, num, num, num, num, num, num))
+    }
+
+    static Vector7 __sub__(Vector7 vec1, Vector7 vec2) {
+        float x = vec1.x - vec2.x;
+        float y = vec1.y - vec2.y;
+        float z = vec1.z - vec2.z;
+        float w = vec1.w - vec2.w;
+        float a = vec1.a - vec2.a;
+        float b = vec1.b - vec2.b;
+        float c = vec1.c - vec2.c;
+
+        return new Vector7(x, y, z, w, a, b, c);
+    }
+
+    static Vector7 __mul__(Vector7 vec1, float num) {   
+        return __mul__(vec1, new Vector7(num, num, num, num, num, num, num))
+    }
+
+    static Vector7 __mul__(Vector7 vec1, int num) {
+        return __mul__(vec1, new Vector7(num, num, num, num, num, num, num))
+    }
+
+    static Vector7 __mul__(Vector7 vec1, Vector7 vec2) {
+        float x = vec1.x * vec2.x;
+        float y = vec1.y * vec2.y;
+        float z = vec1.z * vec2.z;
+        float w = vec1.w * vec2.w;
+        float a = vec1.a * vec2.a;
+        float b = vec1.b * vec2.b;
+        float c = vec1.c * vec2.c;
+
+        return new Vector7(x, y, z, w, a, b, c);
+    }
+
+    static Vector7 __div__(Vector7 vec1, float num) {   
+        return __div__(vec1, new Vector7(num, num, num, num, num, num, num))
+    }
+
+    static Vector7 __div__(Vector7 vec1, int num) {
+        return __div__(vec1, new Vector7(num, num, num, num, num, num, num))
+    }
+
+    static Vector7 __div__(Vector7 vec1, Vector7 vec2) {
+        float x = vec1.x / vec2.x;
+        float y = vec1.y / vec2.y;
+        float z = vec1.z / vec2.z;
+        float w = vec1.w / vec2.w;
+        float a = vec1.a / vec2.a;
+        float b = vec1.b / vec2.b;
+        float c = vec1.c / vec2.c;
+
+        return new Vector7(x, y, z, w, a, b, c);
+    }
+
+    float getMagnitude() {
+        Math.sqrt(x^2, y^2, z^2, w^2, a^2, b^2, z^2);
+    }
+
+    float getNormalized() {
+        float magnitude = this.getMagnitude();
+
+        float x = this.x / (magnitude);
+        float y = this.y / (magnitude);
+        float z = this.z / (magnitude);
+        float w = this.w / (magnitude);
+        float a = this.a / (magnitude);
+        float b = this.b / (magnitude);
+        float c = this.c / (magnitude);
+        
+        return new Vector7(x, y, z, w, a, b, c);
+    }
+
+}

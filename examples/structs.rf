@@ -1,0 +1,8 @@
+int x = 15;
+
+struct E {
+    int age;
+    string hello;
+}
+
+E<int> e = new E(10);

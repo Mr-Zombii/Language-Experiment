@@ -1,0 +1,8 @@
+fn add(int a, int b) -> int {
+    const int q = a + b;
+    return o;
+}
+
+fn main(array<string> args) {
+    add(10, 10);
+}
