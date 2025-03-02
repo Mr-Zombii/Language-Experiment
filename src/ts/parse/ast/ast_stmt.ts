@@ -13,6 +13,40 @@ export class ExprStmt implements Stmt {
 
 }
 
+export class PackageStmt {
+    public pkg: string;
+
+    constructor(pkg: string) {
+        this.pkg = pkg;
+    }
+
+}
+
+export class NativeFunctionStmt {
+
+    public type: Type;
+    public name: string;
+    public params: Pair<Type, String>[];
+
+    constructor(name: string, params: Pair<Type, String>[], type: Type) {
+        this.name = name;
+        this.params = params;
+        this.type = type;
+    }
+
+}
+
+export class ProgramStmt implements Stmt {
+    public stmts: Stmt[];
+    public pkg: PackageStmt;
+
+    constructor(pkg: PackageStmt, stmts: Stmt[]) {
+        this.stmts = stmts;
+        this.pkg = pkg;
+    }
+
+}
+
 export class BlockStmt implements Stmt {
     public stmts: Stmt[];
 
@@ -55,10 +89,10 @@ export class VarListStmt implements Stmt {
 export class FunctionDeclarationStmt implements Stmt {
     public type: Type;
     public name: string;
-    public params: Pair<String, Type>[];
+    public params: Pair<Type, String>[];
     public block: BlockStmt;
 
-    constructor(name: string, params: Pair<String, Type>[], type: Type, block: BlockStmt) {
+    constructor(name: string, params: Pair<Type, String>[], type: Type, block: BlockStmt) {
         this.name = name;
         this.params = params;
         this.type = type;
@@ -73,6 +107,30 @@ export class ReturnStmt implements Stmt {
 
     constructor(value: Expr) {
         this.value = value;
+    }
+
+}
+
+export class EnumStmt implements Stmt {
+
+    public name: string;
+    public values: string[];
+
+    constructor(name: string, values: string[]) {
+        this.name = name;
+        this.values = values;
+    }
+
+}
+
+export class StructStmt implements Stmt {
+
+    public name: string;
+    public values: Pair<Type, String>[];
+
+    constructor(name: string, values: Pair<Type, String>[]) {
+        this.name = name;
+        this.values = values;
     }
 
 }

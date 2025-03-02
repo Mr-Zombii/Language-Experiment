@@ -59,6 +59,7 @@ export const enum TokenType {
     IF =  "IF",
     ELSE =  "ELSE",
     FUNCTION =  "FUNCTION",
+    NATIVE =  "NATIVE",
     STATIC =  "STATIC",
     WHILE =  "WHITE",
     FOR =  "FOR",
@@ -114,7 +115,9 @@ export const enum TokenType {
 
     ARRAY = "ARRAY",
     PAIR =  "PAIR",
-    CLASS =  "CLASS"
+    CLASS =  "CLASS",
+    ENUM =  "ENUM",
+    PACKAGE = "PACKAGE"
 }
 
 
@@ -122,6 +125,7 @@ const keywordList: Map<string, TokenType> = new Map<string, TokenType>([
     ["if", TokenType.IF],
     ["else", TokenType.ELSE],
     ["fn", TokenType.FUNCTION],
+    ["native", TokenType.NATIVE],
     ["static", TokenType.STATIC],
     ["while", TokenType.WHILE],
     ["for", TokenType.FOR],
@@ -129,27 +133,39 @@ const keywordList: Map<string, TokenType> = new Map<string, TokenType>([
     ["var", TokenType.VAR],
     ["switch", TokenType.SWITCH],
     ["return", TokenType.RETURN],
+    ["package", TokenType.PACKAGE],
     ["new", TokenType.NEW],
 
-    ["int", TokenType.T_INT_32],
     ["i64", TokenType.T_INT_64],
+    ["long", TokenType.T_INT_64],
     ["i32", TokenType.T_INT_32],
+    ["int", TokenType.T_INT_32],
     ["i16", TokenType.T_INT_16],
+    ["short", TokenType.T_INT_16],
     ["i8", TokenType.T_INT_8],
+    ["byte", TokenType.T_INT_8],
+    ["char", TokenType.T_INT_8],
 
     ["u64", TokenType.T_UINT_64],
+    ["ulong", TokenType.T_UINT_64],
     ["u32", TokenType.T_UINT_32],
+    ["uint", TokenType.T_UINT_32],
     ["u16", TokenType.T_UINT_16],
+    ["ushort", TokenType.T_UINT_16],
     ["u8", TokenType.T_UINT_8],
+    ["ubyte", TokenType.T_UINT_8],
+    ["uchar", TokenType.T_UINT_8],
 
     ["f64", TokenType.T_FLOAT_64],
-    ["float", TokenType.T_FLOAT_32],
+    ["double", TokenType.T_FLOAT_32],
     ["f32", TokenType.T_FLOAT_32],
+    ["float", TokenType.T_FLOAT_32],
     ["f16", TokenType.T_FLOAT_16],
 
     ["string", TokenType.T_STRING],
     ["class", TokenType.CLASS],
     ["struct", TokenType.STRUCT],
+    ["enum", TokenType.ENUM],
 
     ["vec2i", TokenType.VEC2I],
     ["vec3i", TokenType.VEC3I],

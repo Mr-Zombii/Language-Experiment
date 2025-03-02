@@ -5,4 +5,4 @@ struct E {
     string hello;
 }
 
-E<int> e = new E(10);
+E e = new E(10);

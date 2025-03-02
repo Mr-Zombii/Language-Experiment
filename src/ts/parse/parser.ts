@@ -1,15 +1,15 @@
 import {Token} from "../lex/token";
 import {
-    BlockStmt,
+    BlockStmt, EnumStmt,
     ExprStmt,
-    FunctionDeclarationStmt,
+    FunctionDeclarationStmt, NativeFunctionStmt, PackageStmt, ProgramStmt,
     ReturnStmt,
-    Stmt,
+    Stmt, StructStmt,
     VarDeclarationStmt,
     VarListStmt
 } from "./ast/ast_stmt";
 import {TokenType} from "../lex/token_type";
-import {ArrayType, PairType, Type} from "./ast/ast_types";
+import {ArrayType, ClassLikeType, PairType, Type} from "./ast/ast_types";
 import {
     AdditiveExpr,
     AssignmentExpr,
@@ -30,11 +30,15 @@ export default class Parser {
     private tokens: Token[];
     private ptr: number;
     private validTypes: string[];
+    private validTypeSignature: string[];
+    private pkg: PackageStmt;
 
     constructor(tokens: Token[]) {
         this.tokens = tokens;
         this.ptr = 0;
         this.validTypes = [];
+        this.validTypeSignature = [];
+        this.pkg = null as unknown as PackageStmt;
     }
 
     private isEOF(): boolean {
@@ -68,14 +72,26 @@ export default class Parser {
         return this.tokens[this.ptr - pastIndex]
     }
 
-    public parse(): BlockStmt {
+    public parse(): ProgramStmt {
         const stmts: Stmt[] = [];
+
+        this.expect(TokenType.PACKAGE);
+        let pkg: string = "";
+        while(!this.isEOF() && this.token().type != TokenType.SEMI_COLON) {
+            pkg += this.expect(TokenType.IDENTIFIER).value;
+            if (this.token().type == TokenType.PERIOD) {
+                this.expect(TokenType.PERIOD);
+                pkg += ".";
+            }
+        }
+        this.expect(TokenType.SEMI_COLON);
+        stmts.push(this.pkg = new PackageStmt(pkg));
 
         while(!this.isEOF()) {
             stmts.push(this.parseStmt());
         }
 
-        return new BlockStmt(stmts);
+        return new ProgramStmt(this.pkg, stmts);
     }
 
     private parseBlock() {
@@ -90,26 +106,27 @@ export default class Parser {
         return new BlockStmt(stmts);
     }
 
-    private parseParams(): Pair<String, Type>[] {
+    private parseParams(): Pair<Type, String>[] {
         this.expect(TokenType.O_PAREN);
         if (this.token().type == TokenType.C_PAREN) {
             this.expect(TokenType.C_PAREN);
             return [];
         }
 
-        const params: Pair<String, Type>[] = [];
+        const params: Pair<Type, String>[] = [];
 
         let type = this.parseType();
         let name = this.expect(TokenType.IDENTIFIER).value;
 
-        params.push(new Pair<String, Type>(name, type));
+        params.push(new Pair<Type, String>(type, name));
 
 
         while(this.token().type == TokenType.COMMA) {
+            this.expect(TokenType.COMMA);
             type = this.parseType();
             name = this.expect(TokenType.IDENTIFIER).value;
 
-            params.push(new Pair<String, Type>(name, type));
+            params.push(new Pair<Type, String>(type, name));
         }
 
         this.expect(TokenType.C_PAREN);
@@ -187,12 +204,23 @@ export default class Parser {
                 this.expect(TokenType.CONST);
                 return this.parseTypeVar(true)
 
+            case TokenType.NATIVE:
+                return this.parseNativeFunction();
+
             case TokenType.FUNCTION:
                 return this.parseFunction();
 
             case TokenType.RETURN:
                 this.expect(TokenType.RETURN);
-                return new ReturnStmt(this.parseExpression());
+                const retExpr: Expr = this.parseExpression();
+                this.expect(TokenType.SEMI_COLON);
+                return new ReturnStmt(retExpr);
+
+            case TokenType.STRUCT:
+                return this.parseStruct();
+
+            case TokenType.ENUM:
+                return this.parseEnum();
 
             default:
                 const expr = new ExprStmt(this.parseExpression());
@@ -209,55 +237,119 @@ export default class Parser {
 
             // Signed integer types
             case TokenType.T_INT_8:
+                type = new Type(tok, "i8");
+                break;
             case TokenType.T_INT_16:
+                type = new Type(tok, "i16");
+                break;
             case TokenType.T_INT_32:
+                type = new Type(tok, "i32");
+                break;
             case TokenType.T_INT_64:
+                type = new Type(tok, "i64");
+                break;
 
             // Unsigned integer types
             case TokenType.T_UINT_8:
+                type = new Type(tok, "u8");
+                break;
             case TokenType.T_UINT_16:
+                type = new Type(tok, "u16");
+                break;
             case TokenType.T_UINT_32:
+                type = new Type(tok, "u32");
+                break;
             case TokenType.T_UINT_64:
+                type = new Type(tok, "u64");
+                break;
 
             // Floating point types
             case TokenType.T_FLOAT_16:
+                type = new Type(tok, "f16");
+                break;
             case TokenType.T_FLOAT_32:
+                type = new Type(tok, "f32");
+                break;
             case TokenType.T_FLOAT_64:
+                type = new Type(tok, "f64");
+                break;
 
             // Float vector types
             case TokenType.VEC2F:
+                type = new Type(tok, "v2i");
+                break;
             case TokenType.VEC3F:
+                type = new Type(tok, "v3i");
+                break;
             case TokenType.VEC4F:
+                type = new Type(tok, "v4i");
+                break;
             case TokenType.VEC5F:
+                type = new Type(tok, "v5i");
+                break;
             case TokenType.VEC6F:
+                type = new Type(tok, "v6f");
+                break;
 
             // Integer vector types
             case TokenType.VEC2I:
+                type = new Type(tok, "v2i");
+                break;
             case TokenType.VEC3I:
+                type = new Type(tok, "v3i");
+                break;
             case TokenType.VEC4I:
+                type = new Type(tok, "v4i");
+                break;
             case TokenType.VEC5I:
+                type = new Type(tok, "v5i");
+                break;
             case TokenType.VEC6I:
+                type = new Type(tok, "v6i");
+                break;
 
             // Float matrix types
             case TokenType.MAT2F:
+                type = new Type(tok, "m6f");
+                break;
             case TokenType.MAT3F:
+                type = new Type(tok, "m6f");
+                break;
             case TokenType.MAT4F:
+                type = new Type(tok, "m6f");
+                break;
             case TokenType.MAT5F:
+                type = new Type(tok, "m6f");
+                break;
             case TokenType.MAT6F:
+                type = new Type(tok, "m6f");
+                break;
 
             // Integer matrix types
             case TokenType.MAT2I:
+                type = new Type(tok, "m2i");
+                break;
             case TokenType.MAT3I:
+                type = new Type(tok, "m3i");
+                break;
             case TokenType.MAT4I:
+                type = new Type(tok, "m4i");
+                break;
             case TokenType.MAT5I:
+                type = new Type(tok, "m5i");
+                break;
             case TokenType.MAT6I:
+                type = new Type(tok, "m6i");
+                break;
 
             // String
             case TokenType.T_STRING:
+                type = new Type(tok, "S");
+                break;
 
             // Void
             case TokenType.VOID:
-                type = new Type(tok.type);
+                type = new Type(tok, "V");
                 break
 
             // Array
@@ -265,7 +357,7 @@ export default class Parser {
                 this.expect(TokenType.LESS_THAN);
                 type = this.parseType();
                 this.expect(TokenType.GREATER_THAN);
-                type = new ArrayType(tok.type, type);
+                type = new ArrayType(tok, type);
                 break
 
             // Pair
@@ -275,19 +367,33 @@ export default class Parser {
                 this.expect(TokenType.COMMA);
                 const typeB: Type = this.parseType();
                 this.expect(TokenType.GREATER_THAN);
-                type = new PairType(tok.type, typeA, typeB);
+                type = new PairType(tok, typeA, typeB);
                 break
 
             // Identifier - Potential Type
             case TokenType.IDENTIFIER:
                 if (this.validTypes.includes(tok.value)) {
-                    type = new Type(tok.type)
+                    if (this.token().type == TokenType.LESS_THAN) {
+                        this.expect(TokenType.LESS_THAN);
+                        const genericsTypes: Type[] = [];
+                        if (this.token().type != TokenType.GREATER_THAN) {
+                            genericsTypes.push(this.parseType());
+                        }
+                        while (this.token().type == TokenType.COMMA) {
+                            this.expect(TokenType.COMMA);
+                            genericsTypes.push(this.parseType());
+                        }
+                        this.expect(TokenType.GREATER_THAN);
+                        type = new ClassLikeType(tok, "L" + this.validTypeSignature[this.validTypes.indexOf(tok.value)], genericsTypes);
+                    } else {
+                        type = new Type(tok, "L" + this.validTypeSignature[this.validTypes.indexOf(tok.value)])
+                    }
                     break
                 }
-                throw new Error(`Invalid Identifier Type \"${tok.value}\"!`)
+                throw new Error(`Invalid Identifier Type \"${tok.value}\"! | line: #${this.token().line}, column: #${this.token().column}`)
 
             default:
-                throw new Error(`Invalid Data-Type: "${this.token().value}" type: #${this.token().type}!`);
+                throw new Error(`Invalid Data-Type: "${this.token().value}" type: #${this.token().type}! | line: #${this.token().line}, column: #${this.token().column}`);
         }
 
         return type;
@@ -332,13 +438,31 @@ export default class Parser {
         return new VarDeclarationStmt(type, name, isConst, expr);
     }
 
+    private parseNativeFunction(): Stmt {
+        this.expect(TokenType.NATIVE);
+        this.expect(TokenType.FUNCTION);
+        const name: string = this.expect(TokenType.IDENTIFIER).value;
+
+        const params = this.parseParams();
+
+        let type: Type = Type.VOID;
+        if (this.token().type == TokenType.MINUS && this.peek().type == TokenType.GREATER_THAN) {
+            this.expect(TokenType.MINUS);
+            this.expect(TokenType.GREATER_THAN);
+            type = this.parseType();
+        }
+
+        this.expect(TokenType.SEMI_COLON);
+        return new NativeFunctionStmt(name, params, type);
+    }
+
     private parseFunction(): Stmt {
         this.expect(TokenType.FUNCTION);
         const name: string = this.expect(TokenType.IDENTIFIER).value;
 
         const params = this.parseParams();
 
-        let type: Type = new Type(TokenType.VOID);
+        let type: Type = Type.VOID;
         if (this.token().type == TokenType.MINUS && this.peek().type == TokenType.GREATER_THAN) {
             this.expect(TokenType.MINUS);
             this.expect(TokenType.GREATER_THAN);
@@ -349,7 +473,58 @@ export default class Parser {
         return new FunctionDeclarationStmt(name, params, type, block);
     }
 
-//    private parseStruct(): Stmt {}
+    private parseEnum(): Stmt {
+        this.expect(TokenType.ENUM);
+        const enumName: string = this.expect(TokenType.IDENTIFIER).value;
+
+        this.validTypes.push(enumName);
+        this.validTypeSignature.push(this.pkg.pkg + ":" + enumName)
+
+        this.expect(TokenType.O_BRACE);
+        if (this.token().type == TokenType.C_PAREN) {
+            this.expect(TokenType.C_PAREN);
+            return new EnumStmt(enumName, []);
+        }
+
+        const params: string[] = [];
+
+        while (!this.isEOF() && this.token().type != TokenType.C_BRACE) {
+            const name = this.expect(TokenType.IDENTIFIER).value;
+            params.push(name);
+
+            this.expect(TokenType.COMMA);
+        }
+
+        this.expect(TokenType.C_BRACE);
+        return new EnumStmt(enumName, params);
+    }
+
+    private parseStruct(): Stmt {
+        this.expect(TokenType.STRUCT);
+        const structName: string = this.expect(TokenType.IDENTIFIER).value;
+
+        this.validTypes.push(structName);
+        this.validTypeSignature.push(this.pkg.pkg + ":" + structName)
+
+        this.expect(TokenType.O_BRACE);
+        if (this.token().type == TokenType.C_PAREN) {
+            this.expect(TokenType.C_PAREN);
+            return new StructStmt(structName, []);
+        }
+
+        const params: Pair<Type, String>[] = [];
+
+        while (!this.isEOF() && this.token().type != TokenType.C_BRACE) {
+            const type = this.parseType();
+            const name = this.expect(TokenType.IDENTIFIER).value;
+            params.push(new Pair<Type, String>(type, name));
+
+            this.expect(TokenType.SEMI_COLON);
+        }
+
+        this.expect(TokenType.C_BRACE);
+        return new StructStmt(structName, params);
+    }
 
     // Expression Section
     private parseExpression(): Expr {
@@ -458,7 +633,7 @@ export default class Parser {
             property = this.parsePrimary();
 
             if (!(property instanceof IdentifierExpr))
-                throw new Error("Cannot parse member expression since right side is not identifier!!")
+                throw new Error(`Cannot parse member expression since right side is not identifier!! | line: #${this.token().line}, column: #${this.token().column}`)
 
             obj = new MemberExpr(obj, property);
         }
@@ -521,7 +696,7 @@ export default class Parser {
                 const stringTok: Token = this.expect(TokenType.STRING);
                 return new StringExpr(stringTok.value);
             default:
-                throw new Error(`Unknown Token: "${this.token().value}" type: "${this.token().type}"`);
+                throw new Error(`Unknown Token: "${this.token().value}" type: "${this.token().type}" | line: #${this.token().line}, column: #${this.token().column}`);
         }
     }
 

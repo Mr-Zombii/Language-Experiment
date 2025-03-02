@@ -1,6 +1,5 @@
 import {Type} from "./ast_types";
 import {TokenType} from "../../lex/token_type";
-import {ExprStmt} from "./ast_stmt";
 
 export interface Expr {}
 
