@@ -73,6 +73,9 @@ export default class Lexer {
         this.tmpString = this.peek();
 
         switch (this.char()) {
+            case "#":
+                this.tmpType = TokenType.HASH;
+                break
             case "+":
                 this.tmpType =
                     this.tmpString == "+" ? TokenType.INCREMENT :
@@ -91,6 +94,12 @@ export default class Lexer {
                     TokenType.MINUS;
                 break
             case "/":
+                if (this.tmpString == "/") {
+                    while (this.ptr < this.chrs.length && this.char() != "\n") {
+                        this.consume();
+                    }
+                    break
+                }
                 this.tmpType =
                     this.tmpString == "=" ? TokenType.EDIVIDE_ASSIGN :
                     TokenType.SLASH;

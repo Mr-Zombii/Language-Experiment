@@ -2,10 +2,10 @@
   "name": "lang",
   "version": "1.0.0",
   "description": "a basic language",
-  "main": "dist/main.js",
+  "main": "dist/ts/main.js",
   "type": "commonjs",
   "scripts": {
-    "start": "npx tsc && node dist/main.js",
+    "start": "npx tsc && node dist/ts/main.js",
     "compile": "npx tsc",
     "env": "fnm env --use-on-cd | Out-String | Invoke-Expression"
   },

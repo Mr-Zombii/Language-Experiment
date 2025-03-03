@@ -2,7 +2,7 @@ import {Token} from "../lex/token";
 import {
     BlockStmt, EnumStmt,
     ExprStmt,
-    FunctionDeclarationStmt, NativeFunctionStmt, PackageStmt, ProgramStmt,
+    FunctionDeclarationStmt, ImportStmt, NativeFunctionStmt, PackageStmt, ProgramStmt,
     ReturnStmt,
     Stmt, StructStmt,
     VarDeclarationStmt,
@@ -75,20 +75,10 @@ export default class Parser {
     public parse(): ProgramStmt {
         const stmts: Stmt[] = [];
 
-        this.expect(TokenType.PACKAGE);
-        let pkg: string = "";
-        while(!this.isEOF() && this.token().type != TokenType.SEMI_COLON) {
-            pkg += this.expect(TokenType.IDENTIFIER).value;
-            if (this.token().type == TokenType.PERIOD) {
-                this.expect(TokenType.PERIOD);
-                pkg += ".";
-            }
-        }
-        this.expect(TokenType.SEMI_COLON);
-        stmts.push(this.pkg = new PackageStmt(pkg));
+        stmts.push(this.pkg = this.parsePackage())
 
         while(!this.isEOF()) {
-            stmts.push(this.parseStmt());
+            stmts.push(this.parseTopLevelStmt());
         }
 
         return new ProgramStmt(this.pkg, stmts);
@@ -131,6 +121,75 @@ export default class Parser {
 
         this.expect(TokenType.C_PAREN);
         return params;
+    }
+
+    private parseTopLevelStmt(): Stmt {
+        switch (this.token().type) {
+
+            case TokenType.NATIVE:
+                return this.parseNativeFunction();
+
+            case TokenType.FUNCTION:
+                return this.parseFunction();
+
+            case TokenType.IMPORT:
+                return this.parseImport();
+
+            case TokenType.RETURN:
+                throw new Error(`Return cannot be on top-level | line: #${this.token().line}, column: #${this.token().column}`);
+
+            case TokenType.STRUCT:
+                return this.parseStruct();
+
+            case TokenType.ENUM:
+                return this.parseEnum();
+
+            default:
+                return this.parseStmt();
+        }
+    }
+
+    private parsePackage(): PackageStmt {
+        this.expect(TokenType.PACKAGE);
+        let pkg: string = "";
+        while(!this.isEOF() && this.token().type != TokenType.SEMI_COLON) {
+            pkg += this.expect(TokenType.IDENTIFIER).value;
+            if (this.token().type == TokenType.PERIOD) {
+                this.expect(TokenType.PERIOD);
+                pkg += ".";
+            }
+        }
+        this.expect(TokenType.SEMI_COLON);
+        return new PackageStmt(pkg);
+    }
+
+    private parseImport(): Stmt {
+        this.expect(TokenType.IMPORT);
+
+        let pkg: string = "";
+        while(!this.isEOF() && this.token().type != TokenType.COLON && this.token().type != TokenType.HASH) {
+            pkg += this.expect(TokenType.IDENTIFIER).value;
+            if (this.token().type == TokenType.PERIOD) {
+                this.expect(TokenType.PERIOD);
+                pkg += ".";
+            }
+        }
+        let isType: boolean;
+        if (this.token().type == TokenType.HASH) {
+            this.expect(TokenType.HASH);
+            isType = true;
+        } else {
+            this.expect(TokenType.COLON);
+            isType = false;
+        }
+        const thing: string = this.expect(TokenType.IDENTIFIER).value;
+        if (isType) {
+            this.validTypes.push(thing);
+            this.validTypeSignature.push(pkg + "#" + thing)
+        }
+        this.expect(TokenType.SEMI_COLON);
+
+        return new ImportStmt(pkg, thing, isType);
     }
 
     private parseStmt(): Stmt {
@@ -204,23 +263,26 @@ export default class Parser {
                 this.expect(TokenType.CONST);
                 return this.parseTypeVar(true)
 
-            case TokenType.NATIVE:
-                return this.parseNativeFunction();
-
-            case TokenType.FUNCTION:
-                return this.parseFunction();
-
             case TokenType.RETURN:
                 this.expect(TokenType.RETURN);
                 const retExpr: Expr = this.parseExpression();
                 this.expect(TokenType.SEMI_COLON);
                 return new ReturnStmt(retExpr);
 
+            case TokenType.IMPORT:
+                throw new Error(`Imports can only be made on the top-level of a program | line: #${this.token().line}, column: #${this.token().column}`);
+
+            case TokenType.NATIVE:
+                throw new Error(`Native-Functions can only be made on the top-level of a program | line: #${this.token().line}, column: #${this.token().column}`);
+
+            case TokenType.FUNCTION:
+                throw new Error(`Functions can only be made on the top-level of a program | line: #${this.token().line}, column: #${this.token().column}`);
+
             case TokenType.STRUCT:
-                return this.parseStruct();
+                throw new Error(`Structs can only be made on the top-level of a program | line: #${this.token().line}, column: #${this.token().column}`);
 
             case TokenType.ENUM:
-                return this.parseEnum();
+                throw new Error(`Enums can only be made on the top-level of a program | line: #${this.token().line}, column: #${this.token().column}`);
 
             default:
                 const expr = new ExprStmt(this.parseExpression());
@@ -478,7 +540,7 @@ export default class Parser {
         const enumName: string = this.expect(TokenType.IDENTIFIER).value;
 
         this.validTypes.push(enumName);
-        this.validTypeSignature.push(this.pkg.pkg + ":" + enumName)
+        this.validTypeSignature.push(this.pkg.pkg + "#" + enumName)
 
         this.expect(TokenType.O_BRACE);
         if (this.token().type == TokenType.C_PAREN) {
@@ -504,7 +566,7 @@ export default class Parser {
         const structName: string = this.expect(TokenType.IDENTIFIER).value;
 
         this.validTypes.push(structName);
-        this.validTypeSignature.push(this.pkg.pkg + ":" + structName)
+        this.validTypeSignature.push(this.pkg.pkg + "#" + structName)
 
         this.expect(TokenType.O_BRACE);
         if (this.token().type == TokenType.C_PAREN) {

@@ -26,6 +26,7 @@ export const enum TokenType {
     // Other
     SEMI_COLON =  ";",
     COLON =  ":",
+    HASH =  "#",
     COMMA =  ",",
     PERIOD =  ".",
 
@@ -117,7 +118,8 @@ export const enum TokenType {
     PAIR =  "PAIR",
     CLASS =  "CLASS",
     ENUM =  "ENUM",
-    PACKAGE = "PACKAGE"
+    PACKAGE = "PACKAGE",
+    IMPORT = "IMPORT",
 }
 
 
@@ -134,7 +136,9 @@ const keywordList: Map<string, TokenType> = new Map<string, TokenType>([
     ["switch", TokenType.SWITCH],
     ["return", TokenType.RETURN],
     ["package", TokenType.PACKAGE],
+    ["import", TokenType.IMPORT],
     ["new", TokenType.NEW],
+    ["#", TokenType.HASH],
 
     ["i64", TokenType.T_INT_64],
     ["long", TokenType.T_INT_64],
