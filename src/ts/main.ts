@@ -22,7 +22,7 @@ i32 x = cast(127, i8);
 
 if (x == true) {
 //    System.out.println("Hello World");
-    i32 x = cast(127, i8);
+    i32 xx = cast(127, i8);
 }
 
 //struct E {
