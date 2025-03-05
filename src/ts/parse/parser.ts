@@ -1,10 +1,18 @@
 import {Token} from "../lex/token";
 import {
-    BlockStmt, EnumStmt,
+    BlockStmt,
+    EnumStmt,
     ExprStmt,
-    FunctionDeclarationStmt, ImportStmt, NativeFunctionStmt, PackageStmt, ProgramStmt,
+    FunctionDeclarationStmt,
+    IfElseStmt,
+    IfStmt,
+    ImportStmt,
+    NativeFunctionStmt,
+    PackageStmt,
+    ProgramStmt,
     ReturnStmt,
-    Stmt, StructStmt,
+    Stmt,
+    StructStmt,
     VarDeclarationStmt,
     VarListStmt
 } from "./ast/ast_stmt";
@@ -16,12 +24,16 @@ import {
     CallExpr,
     EqualityExpr,
     ExponentialExpr,
-    Expr, FloatExpr,
-    IdentifierExpr, IntegerExpr,
+    Expr,
+    FloatExpr,
+    IdentifierExpr,
+    IntegerExpr,
     MemberExpr,
     MultiplicativeExpr,
     NewInstanceExpr,
-    RelationalExpr, StringExpr
+    RelationalExpr,
+    StringExpr,
+    CastExpr,
 } from "./ast/ast_expr";
 import {Pair} from "../util";
 
@@ -247,6 +259,9 @@ export default class Parser {
             case TokenType.T_STRING:
                 return this.parseTypeVar();
 
+            case TokenType.IF:
+                return this.parseIfElse();
+
             // Identifier - Potential Type
             case TokenType.IDENTIFIER:
                 let i = this.ptr;
@@ -299,119 +314,119 @@ export default class Parser {
 
             // Signed integer types
             case TokenType.T_INT_8:
-                type = new Type(tok, "i8");
+                type = new Type(tok.type, "i8");
                 break;
             case TokenType.T_INT_16:
-                type = new Type(tok, "i16");
+                type = new Type(tok.type, "i16");
                 break;
             case TokenType.T_INT_32:
-                type = new Type(tok, "i32");
+                type = new Type(tok.type, "i32");
                 break;
             case TokenType.T_INT_64:
-                type = new Type(tok, "i64");
+                type = new Type(tok.type, "i64");
                 break;
 
             // Unsigned integer types
             case TokenType.T_UINT_8:
-                type = new Type(tok, "u8");
+                type = new Type(tok.type, "u8");
                 break;
             case TokenType.T_UINT_16:
-                type = new Type(tok, "u16");
+                type = new Type(tok.type, "u16");
                 break;
             case TokenType.T_UINT_32:
-                type = new Type(tok, "u32");
+                type = new Type(tok.type, "u32");
                 break;
             case TokenType.T_UINT_64:
-                type = new Type(tok, "u64");
+                type = new Type(tok.type, "u64");
                 break;
 
             // Floating point types
             case TokenType.T_FLOAT_16:
-                type = new Type(tok, "f16");
+                type = new Type(tok.type, "f16");
                 break;
             case TokenType.T_FLOAT_32:
-                type = new Type(tok, "f32");
+                type = new Type(tok.type, "f32");
                 break;
             case TokenType.T_FLOAT_64:
-                type = new Type(tok, "f64");
+                type = new Type(tok.type, "f64");
                 break;
 
             // Float vector types
             case TokenType.VEC2F:
-                type = new Type(tok, "v2i");
+                type = new Type(tok.type, "v2i");
                 break;
             case TokenType.VEC3F:
-                type = new Type(tok, "v3i");
+                type = new Type(tok.type, "v3i");
                 break;
             case TokenType.VEC4F:
-                type = new Type(tok, "v4i");
+                type = new Type(tok.type, "v4i");
                 break;
             case TokenType.VEC5F:
-                type = new Type(tok, "v5i");
+                type = new Type(tok.type, "v5i");
                 break;
             case TokenType.VEC6F:
-                type = new Type(tok, "v6f");
+                type = new Type(tok.type, "v6f");
                 break;
 
             // Integer vector types
             case TokenType.VEC2I:
-                type = new Type(tok, "v2i");
+                type = new Type(tok.type, "v2i");
                 break;
             case TokenType.VEC3I:
-                type = new Type(tok, "v3i");
+                type = new Type(tok.type, "v3i");
                 break;
             case TokenType.VEC4I:
-                type = new Type(tok, "v4i");
+                type = new Type(tok.type, "v4i");
                 break;
             case TokenType.VEC5I:
-                type = new Type(tok, "v5i");
+                type = new Type(tok.type, "v5i");
                 break;
             case TokenType.VEC6I:
-                type = new Type(tok, "v6i");
+                type = new Type(tok.type, "v6i");
                 break;
 
             // Float matrix types
             case TokenType.MAT2F:
-                type = new Type(tok, "m6f");
+                type = new Type(tok.type, "m6f");
                 break;
             case TokenType.MAT3F:
-                type = new Type(tok, "m6f");
+                type = new Type(tok.type, "m6f");
                 break;
             case TokenType.MAT4F:
-                type = new Type(tok, "m6f");
+                type = new Type(tok.type, "m6f");
                 break;
             case TokenType.MAT5F:
-                type = new Type(tok, "m6f");
+                type = new Type(tok.type, "m6f");
                 break;
             case TokenType.MAT6F:
-                type = new Type(tok, "m6f");
+                type = new Type(tok.type, "m6f");
                 break;
 
             // Integer matrix types
             case TokenType.MAT2I:
-                type = new Type(tok, "m2i");
+                type = new Type(tok.type, "m2i");
                 break;
             case TokenType.MAT3I:
-                type = new Type(tok, "m3i");
+                type = new Type(tok.type, "m3i");
                 break;
             case TokenType.MAT4I:
-                type = new Type(tok, "m4i");
+                type = new Type(tok.type, "m4i");
                 break;
             case TokenType.MAT5I:
-                type = new Type(tok, "m5i");
+                type = new Type(tok.type, "m5i");
                 break;
             case TokenType.MAT6I:
-                type = new Type(tok, "m6i");
+                type = new Type(tok.type, "m6i");
                 break;
 
             // String
             case TokenType.T_STRING:
-                type = new Type(tok, "S");
+                type = new Type(tok.type, "S");
                 break;
 
             // Void
             case TokenType.VOID:
-                type = new Type(tok, "V");
+                type = new Type(tok.type, "V");
                 break
 
             // Array
@@ -419,7 +434,7 @@ export default class Parser {
                 this.expect(TokenType.LESS_THAN);
                 type = this.parseType();
                 this.expect(TokenType.GREATER_THAN);
-                type = new ArrayType(tok, type);
+                type = new ArrayType(tok.type, type);
                 break
 
             // Pair
@@ -429,7 +444,7 @@ export default class Parser {
                 this.expect(TokenType.COMMA);
                 const typeB: Type = this.parseType();
                 this.expect(TokenType.GREATER_THAN);
-                type = new PairType(tok, typeA, typeB);
+                type = new PairType(tok.type, typeA, typeB);
                 break
 
             // Identifier - Potential Type
@@ -446,9 +461,9 @@ export default class Parser {
                             genericsTypes.push(this.parseType());
                         }
                         this.expect(TokenType.GREATER_THAN);
-                        type = new ClassLikeType(tok, "L" + this.validTypeSignature[this.validTypes.indexOf(tok.value)], genericsTypes);
+                        type = new ClassLikeType(tok.type, "L" + this.validTypeSignature[this.validTypes.indexOf(tok.value)], genericsTypes);
                     } else {
-                        type = new Type(tok, "L" + this.validTypeSignature[this.validTypes.indexOf(tok.value)])
+                        type = new Type(tok.type, "L" + this.validTypeSignature[this.validTypes.indexOf(tok.value)])
                     }
                     break
                 }
@@ -498,6 +513,23 @@ export default class Parser {
         const expr = this.parseExpression();
         this.expect(TokenType.SEMI_COLON);
         return new VarDeclarationStmt(type, name, isConst, expr);
+    }
+
+    private parseIfElse(): Stmt {
+        this.expect(TokenType.IF);
+        this.expect(TokenType.O_PAREN);
+        const condition: Expr = this.parseExpression();
+        this.expect(TokenType.C_PAREN);
+
+        const thenBlock = this.token().type == TokenType.O_BRACE ? this.parseBlock() : this.parseStmt();
+
+        if (this.token().type != TokenType.ELSE)
+            return new IfStmt(condition, thenBlock);
+
+        this.expect(TokenType.ELSE)
+        const elseBlock = this.token().type == TokenType.O_BRACE ? this.parseBlock() : this.parseStmt();
+
+        return new IfElseStmt(condition, thenBlock, elseBlock);
     }
 
     private parseNativeFunction(): Stmt {
@@ -735,6 +767,14 @@ export default class Parser {
 
     private parsePrimary(): Expr {
         switch (this.token().type) {
+            case TokenType.CAST:
+                this.expect(TokenType.CAST);
+                this.expect(TokenType.O_PAREN);
+                const eExpr: Expr = this.parseExpression();
+                this.expect(TokenType.COMMA);
+                const tType: Type = this.parseType();
+                this.expect(TokenType.C_PAREN);
+                return new CastExpr(eExpr, tType);
             case TokenType.O_PAREN:
                 this.expect(TokenType.O_PAREN);
                 const parenExpr = this.parseExpression();

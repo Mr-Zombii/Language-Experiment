@@ -1,18 +1,9 @@
 import {Expr} from "./ast_expr";
 import {Type} from "./ast_types";
 import {Pair} from "../../util";
+import {ASTNode} from "./ast_node_types";
 
-type StmtKind = "exprstmt" | "package" | "import" | "native_function" | "function" | "block" | "varlist" | "varstmt" | "struct" | "enum" | "return" | "program"
-
-export class Stmt {
-
-    public kind: StmtKind
-
-    constructor(kind: StmtKind) {
-        this.kind = kind;
-    }
-
-}
+export class Stmt extends ASTNode {}
 
 export class ExprStmt extends Stmt {
     public expr: Expr;
@@ -48,6 +39,35 @@ export class ImportStmt extends Stmt {
     }
 
 }
+
+export class IfStmt extends Stmt {
+
+    public condition: Expr
+    public thenBlock: Stmt;
+
+    constructor(condition: Expr, thenBlock: Stmt) {
+        super("if")
+        this.condition = condition;
+        this.thenBlock = thenBlock;
+    }
+
+}
+
+export class IfElseStmt extends Stmt {
+
+    public condition: Expr
+    public thenBlock: Stmt;
+    public elseBlock: Stmt;
+
+    constructor(condition: Expr, thenBlock: Stmt, elseBlock: Stmt) {
+        super("if_else")
+        this.condition = condition;
+        this.thenBlock = thenBlock;
+        this.elseBlock = elseBlock;
+    }
+
+}
+
 
 export class NativeFunctionStmt extends Stmt {
 

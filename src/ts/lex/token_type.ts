@@ -39,7 +39,7 @@ export const enum TokenType {
     BITWISE_OR =  "|",
 
     // Equality & Relational
-    EQUALS =  "=",
+    EQUALS =  "==",
     NOT_EQUALS =  "!=",
     GREATER_THAN =  ">",
     LESS_THAN =  "<",
@@ -120,10 +120,12 @@ export const enum TokenType {
     ENUM =  "ENUM",
     PACKAGE = "PACKAGE",
     IMPORT = "IMPORT",
+    CAST = "CAST",
 }
 
 
 const keywordList: Map<string, TokenType> = new Map<string, TokenType>([
+    ["cast", TokenType.CAST],
     ["if", TokenType.IF],
     ["else", TokenType.ELSE],
     ["fn", TokenType.FUNCTION],

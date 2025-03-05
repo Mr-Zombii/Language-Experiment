@@ -7,39 +7,43 @@ import TypeChecker from "./typechecker/typechecker";
 const lex: Lexer = new Lexer(`
 package me.zombii.test;
 
-import me.zombii.langexp.io:print;
-import me.zombii.langexp.io:printf;
-import me.zombii.langexp.io:println;
+//import me.zombii.langexp.io:print;
+//import me.zombii.langexp.io:printf;
+//import me.zombii.langexp.io:println;
 
-import me.zombii.langexp.io#System;
-
-import me.zombii.test:E;
+//import me.zombii.langexp.io#System;
 
 //Lme.zombii.test.E<me.zombii.test.E<me.zombii.test.E,me.zombii.test.E>
 
-System.out.println();
+//System.out.println();
 
-int x = 15;
+//i8 x = cast(16, i8);
+i32 x = cast(127, i8);
 
-struct E {
-    int age;
-    string hello;
+if (x == true) {
+//    System.out.println("Hello World");
+    i32 x = cast(127, i8);
 }
 
-E<E<E, E>> e = new E<E<E, E>>(10, "tits");
-E e = new E(10, "tits");
+//struct E {
+//    int age;
+//    string hello;
+//}
 
-enum Test {
-    a,
-    b,
-    c,
-}
+//E<E<E, E>> e = new E<E<E, E>>(10, "tits");
+//E e = new E(10, "tits");
 
-Test e = Test.a;
+//enum Test {
+//    a,
+//    b,
+//    c,
+//}
 
-println(e);
+//Test e = Test.a;
 
-native fn sin(i32 a) -> f32;
+//println(e);
+
+//native fn sin(i32 a) -> f32;
 `);
 lex.tokenize();
 const parser: Parser = new Parser(lex.tokens);

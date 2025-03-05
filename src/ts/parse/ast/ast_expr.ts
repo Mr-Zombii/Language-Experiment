@@ -1,27 +1,30 @@
 import {Type} from "./ast_types";
 import {TokenType} from "../../lex/token_type";
+import {ASTNode} from "./ast_node_types";
 
-export interface Expr {}
+export class Expr extends ASTNode {}
 
-export class NewInstanceExpr implements Expr {
+export class NewInstanceExpr extends Expr {
 
     public type: Type;
     public args: Expr[];
 
     constructor(type: Type, args: Expr[]) {
+        super("new_instance_expr");
         this.type = type;
         this.args = args;
     }
 
 }
 
-export class AssignmentExpr implements Expr {
+export class AssignmentExpr extends Expr {
 
     public op: TokenType;
     public left: Expr;
     public right: Expr;
 
     constructor(op: TokenType, left: Expr, right: Expr) {
+        super("assignment_expr");
         this.op = op;
         this.left = left;
         this.right = right;
@@ -29,13 +32,14 @@ export class AssignmentExpr implements Expr {
 
 }
 
-export class EqualityExpr implements Expr {
+export class EqualityExpr extends Expr {
 
     public op: TokenType;
     public left: Expr;
     public right: Expr;
 
     constructor(op: TokenType, left: Expr, right: Expr) {
+        super("equality_expr");
         this.op = op;
         this.left = left;
         this.right = right;
@@ -43,13 +47,14 @@ export class EqualityExpr implements Expr {
 
 }
 
-export class RelationalExpr implements Expr {
+export class RelationalExpr extends Expr {
 
     public op: TokenType;
     public left: Expr;
     public right: Expr;
 
     constructor(op: TokenType, left: Expr, right: Expr) {
+        super("relational_expr");
         this.op = op;
         this.left = left;
         this.right = right;
@@ -57,13 +62,14 @@ export class RelationalExpr implements Expr {
 
 }
 
-export class AdditiveExpr implements Expr {
+export class AdditiveExpr extends Expr {
 
     public op: TokenType;
     public left: Expr;
     public right: Expr;
 
     constructor(op: TokenType, left: Expr, right: Expr) {
+        super("additive_expr");
         this.op = op;
         this.left = left;
         this.right = right;
@@ -71,13 +77,14 @@ export class AdditiveExpr implements Expr {
 
 }
 
-export class MultiplicativeExpr implements Expr {
+export class MultiplicativeExpr extends Expr {
 
     public op: TokenType;
     public left: Expr;
     public right: Expr;
 
     constructor(op: TokenType, left: Expr, right: Expr) {
+        super("multiplicative_expr");
         this.op = op;
         this.left = left;
         this.right = right;
@@ -85,13 +92,14 @@ export class MultiplicativeExpr implements Expr {
 
 }
 
-export class ExponentialExpr implements Expr {
+export class ExponentialExpr extends Expr {
 
     public op: TokenType;
     public left: Expr;
     public right: Expr;
 
     constructor(op: TokenType, left: Expr, right: Expr) {
+        super("exponential_expr");
         this.op = op;
         this.left = left;
         this.right = right;
@@ -99,50 +107,54 @@ export class ExponentialExpr implements Expr {
 
 }
 
-export class MemberExpr implements Expr {
+export class MemberExpr extends Expr {
 
     public obj: Expr;
     public property: Expr;
 
     constructor(obj: Expr, property: Expr) {
+        super("member_expr");
         this.obj = obj;
         this.property = property;
     }
 
 }
 
-export class CallExpr implements Expr {
+export class CallExpr extends Expr {
 
     public caller: Expr;
     public args: Expr[];
 
     constructor(caller: Expr, args: Expr[]) {
+        super("call_expr");
         this.caller = caller;
         this.args = args;
     }
 
 }
 
-export class IdentifierExpr implements Expr {
+export class IdentifierExpr extends Expr {
     public name: string;
 
     constructor(name: string) {
+        super("identifier_expr");
         this.name = name;
     }
 
 }
 
-export class StringExpr implements Expr {
+export class StringExpr extends Expr {
 
     public value: string;
 
     constructor(value: string) {
+        super("string_expr");
         this.value = value;
     }
 
 }
 
-export class IntegerExpr implements Expr {
+export class IntegerExpr extends Expr {
 
     public value: BigInt;
 
@@ -164,6 +176,7 @@ export class IntegerExpr implements Expr {
     static max64u: BigInt = 18_446_744_073_709_551_615n;
 
     constructor(value: BigInt) {
+        super("int_expr");
         this.value = value;
     }
 
@@ -203,14 +216,32 @@ export class IntegerExpr implements Expr {
         return this.value <= IntegerExpr.max8u && this.value >= (0n as BigInt);
     }
 
+    public static I8_TYPE = new Type(TokenType.T_INT_8, "i8")
+    public static I16_TYPE = new Type(TokenType.T_INT_16, "i16")
+    public static I32_TYPE = new Type(TokenType.T_INT_32, "i32")
+    public static I64_TYPE = new Type(TokenType.T_INT_64, "i64")
+
 }
 
-export class FloatExpr implements Expr {
+export class FloatExpr extends Expr {
 
     public value: number;
 
     constructor(value: number) {
+        super("float_expr");
         this.value = value;
     }
 
+}
+
+export class CastExpr extends Expr {
+
+    public expr: Expr;
+    public outType: Type;
+
+    constructor(expr: Expr, outType: Type) {
+        super("cast_expr");
+        this.expr = expr;
+        this.outType = outType;
+    }
 }
