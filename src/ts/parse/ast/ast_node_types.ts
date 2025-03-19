@@ -28,6 +28,8 @@ type NodeKind =
     | "int_expr"
     | "float_expr"
     | "cast_expr"
+    | "for"
+    | "while"
 
 export class ASTNode {
 

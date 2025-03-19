@@ -7,6 +7,7 @@
   "scripts": {
     "start": "npx tsc && node dist/ts/main.js",
     "compile": "npx tsc",
+    "installc": "npm install",
     "env": "fnm env --use-on-cd | Out-String | Invoke-Expression"
   },
   "author": "Mr_Zombii",

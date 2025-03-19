@@ -3,6 +3,7 @@ import {
     BlockStmt,
     EnumStmt,
     ExprStmt,
+    ForStmt,
     FunctionDeclarationStmt,
     IfElseStmt,
     IfStmt,
@@ -14,7 +15,8 @@ import {
     Stmt,
     StructStmt,
     VarDeclarationStmt,
-    VarListStmt
+    VarListStmt,
+    WhileStmt
 } from "./ast/ast_stmt";
 import {TokenType} from "../lex/token_type";
 import {ArrayType, ClassLikeType, PairType, Type} from "./ast/ast_types";
@@ -22,6 +24,7 @@ import {
     AdditiveExpr,
     AssignmentExpr,
     CallExpr,
+    CastExpr,
     EqualityExpr,
     ExponentialExpr,
     Expr,
@@ -33,7 +36,6 @@ import {
     NewInstanceExpr,
     RelationalExpr,
     StringExpr,
-    CastExpr,
 } from "./ast/ast_expr";
 import {Pair} from "../util";
 
@@ -108,19 +110,19 @@ export default class Parser {
         return new BlockStmt(stmts);
     }
 
-    private parseParams(): Pair<Type, String>[] {
+    private parseParams(): Pair<Type, string>[] {
         this.expect(TokenType.O_PAREN);
         if (this.token().type == TokenType.C_PAREN) {
             this.expect(TokenType.C_PAREN);
             return [];
         }
 
-        const params: Pair<Type, String>[] = [];
+        const params: Pair<Type, string>[] = [];
 
         let type = this.parseType();
         let name = this.expect(TokenType.IDENTIFIER).value;
 
-        params.push(new Pair<Type, String>(type, name));
+        params.push(new Pair<Type, string>(type, name));
 
 
         while(this.token().type == TokenType.COMMA) {
@@ -128,7 +130,7 @@ export default class Parser {
             type = this.parseType();
             name = this.expect(TokenType.IDENTIFIER).value;
 
-            params.push(new Pair<Type, String>(type, name));
+            params.push(new Pair<Type, string>(type, name));
         }
 
         this.expect(TokenType.C_PAREN);
@@ -299,6 +301,12 @@ export default class Parser {
             case TokenType.ENUM:
                 throw new Error(`Enums can only be made on the top-level of a program | line: #${this.token().line}, column: #${this.token().column}`);
 
+            case TokenType.WHILE:
+                return this.parseWhile();
+
+            case TokenType.FOR:
+                return this.parseFor();
+
             default:
                 const expr = new ExprStmt(this.parseExpression());
                 this.expect(TokenType.SEMI_COLON);
@@ -421,7 +429,7 @@ export default class Parser {
 
             // String
             case TokenType.T_STRING:
-                type = new Type(tok.type, "S");
+                type = new Type(tok.type, "str");
                 break;
 
             // Void
@@ -476,12 +484,15 @@ export default class Parser {
         return type;
     }
 
-    private parseTypeVar(isConst: boolean = false): Stmt {
+    private parseTypeVar(isConst: boolean = false, allowList: boolean = true): Stmt {
         const type: Type = this.parseType();
         const name: string = this.expect(TokenType.IDENTIFIER).value;
 
         if (this.token().type == TokenType.COMMA) {
             const names: string[] = [name];
+
+            if (!allowList)
+                throw new Error(`Cannot chain variable declarations here.`)
 
             while(this.token().type == TokenType.COMMA) {
                 this.expect(TokenType.COMMA);
@@ -603,7 +614,7 @@ export default class Parser {
         this.expect(TokenType.O_BRACE);
         if (this.token().type == TokenType.C_PAREN) {
             this.expect(TokenType.C_PAREN);
-            return new StructStmt(structName, []);
+            return new StructStmt(structName, "L" + this.pkg.pkg + "#" + structName, []);
         }
 
         const params: Pair<Type, String>[] = [];
@@ -617,7 +628,35 @@ export default class Parser {
         }
 
         this.expect(TokenType.C_BRACE);
-        return new StructStmt(structName, params);
+        return new StructStmt(structName, "L" + this.pkg.pkg + "#" + structName, params);
+    }
+
+    private parseFor() {
+        this.expect(TokenType.FOR);
+        this.expect(TokenType.O_PAREN);
+
+        const varDec: VarDeclarationStmt = this.parseTypeVar(false, false) as unknown as VarDeclarationStmt;
+        const cond: Expr = this.parseExpression();
+        this.expect(TokenType.SEMI_COLON);
+        const after: Expr = this.parseExpression();
+
+        this.expect(TokenType.C_PAREN);
+
+        const body: BlockStmt = this.parseBlock();
+
+        return new ForStmt(varDec, cond, after, body);
+    }
+
+    private parseWhile() {
+        this.expect(TokenType.WHILE);
+
+        this.expect(TokenType.O_PAREN);
+        const cond: Expr = this.parseExpression();
+        this.expect(TokenType.C_PAREN);
+
+        const body: BlockStmt = this.parseBlock();
+
+        return new WhileStmt(cond, body);
     }
 
     // Expression Section
@@ -776,7 +815,17 @@ export default class Parser {
                 this.expect(TokenType.C_PAREN);
                 return new CastExpr(eExpr, tType);
             case TokenType.O_PAREN:
+                const oldPtr = this.ptr;
+
                 this.expect(TokenType.O_PAREN);
+                try {
+                    const t: Type = this.parseType();
+                    this.expect(TokenType.C_PAREN);
+                    const parenExpr = this.parseExpression();
+                    return new CastExpr(parenExpr, t);
+                } catch (e) {
+                    this.ptr = oldPtr;
+                }
                 const parenExpr = this.parseExpression();
                 this.expect(TokenType.C_PAREN);
                 return parenExpr;

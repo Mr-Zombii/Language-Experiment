@@ -106,6 +106,34 @@ export class BlockStmt extends Stmt {
 
 }
 
+export class WhileStmt extends Stmt {
+    public block: BlockStmt;
+    public condition: Expr;
+
+    constructor(condition: Expr, block: BlockStmt) {
+        super("while")
+        this.block = block;
+        this.condition = condition;
+    }
+
+}
+
+export class ForStmt extends Stmt {
+    public block: BlockStmt;
+    public init: VarDeclarationStmt;
+    public condition: Expr;
+    public after: Expr;
+
+    constructor(init: VarDeclarationStmt, condition: Expr, after: Expr, block: BlockStmt) {
+        super("for")
+        this.init = init;
+        this.block = block;
+        this.after = after;
+        this.condition = condition;
+    }
+
+}
+
 export class VarDeclarationStmt extends Stmt {
     public type: Type;
     public name: string;
@@ -141,10 +169,10 @@ export class VarListStmt extends Stmt {
 export class FunctionDeclarationStmt extends Stmt {
     public type: Type;
     public name: string;
-    public params: Pair<Type, String>[];
+    public params: Pair<Type, string>[];
     public block: BlockStmt;
 
-    constructor(name: string, params: Pair<Type, String>[], type: Type, block: BlockStmt) {
+    constructor(name: string, params: Pair<Type, string>[], type: Type, block: BlockStmt) {
         super("function")
         this.name = name;
         this.params = params;
@@ -181,12 +209,14 @@ export class EnumStmt extends Stmt {
 export class StructStmt extends Stmt {
 
     public name: string;
+    public signature: string;
     public values: Pair<Type, String>[];
 
-    constructor(name: string, values: Pair<Type, String>[]) {
+    constructor(name: string, signature: string, values: Pair<Type, String>[]) {
         super("struct")
         this.name = name;
         this.values = values;
+        this.signature = signature;
     }
 
 }
