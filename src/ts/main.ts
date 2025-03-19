@@ -4,6 +4,7 @@ import Lexer from "./lex/lexer";
 import Parser from "./parse/parser";
 import TypeChecker from "./typechecker/typechecker";
 
+
 const lex: Lexer = new Lexer(`
 package me.zombii.test;
 
@@ -18,20 +19,21 @@ package me.zombii.test;
 //System.out.println();
 
 //i8 x = cast(16, i8);
-i32 x = cast(127, i8);
+//i8 x = cast(127, i8);
+i8 x = (i8) 127;
 
 if (x == true) {
 //    System.out.println("Hello World");
     i32 xx = cast(127, i8);
 }
 
-//struct E {
-//    int age;
-//    string hello;
-//}
+struct E {
+    i8 age;
+    string hello;
+}
 
 //E<E<E, E>> e = new E<E<E, E>>(10, "tits");
-//E e = new E(10, "tits");
+E e = new E(x = 15, "tits");
 
 //enum Test {
 //    a,
@@ -44,6 +46,23 @@ if (x == true) {
 //println(e);
 
 //native fn sin(i32 a) -> f32;
+
+fn fib(int n) -> int {
+    if (n <= 1)
+        return n;
+    
+    int a = 0;
+    int b = 0;
+    int temp;
+    
+    for (int i = 2; i <= n; i += 1) {
+        temp = a + b;
+        a = b;
+        b = temp;
+    }
+    
+    return b;
+}
 `);
 lex.tokenize();
 const parser: Parser = new Parser(lex.tokens);
