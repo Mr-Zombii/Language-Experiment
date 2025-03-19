@@ -1,5 +1,3 @@
-import util from "util";
-
 import Lexer from "./lex/lexer";
 import Parser from "./parse/parser";
 import TypeChecker from "./typechecker/typechecker";

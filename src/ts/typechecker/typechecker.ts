@@ -141,7 +141,7 @@ export default class TypeChecker {
 
                 this.traverse(forEnv, forStmt.init)
                 const condT: Type = this.traverseExpr(forEnv, forStmt.condition)
-                const afterT: Type = this.traverseExpr(forEnv, forStmt.after)
+                this.traverseExpr(forEnv, forStmt.after)
                 if (!IntegerExpr.I64_TYPE.canCast(condT)) {
                     throw new Error(`for loop condition must output type of i64 or lower, not "${condT.signature}"`);
                 }

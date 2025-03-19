@@ -82,10 +82,6 @@ export default class Parser {
         return this.tokens[this.ptr + peekIndex]
     }
 
-    private past(pastIndex: number = 1): Token {
-        return this.tokens[this.ptr - pastIndex]
-    }
-
     public parse(): ProgramStmt {
         const stmts: Stmt[] = [];
 

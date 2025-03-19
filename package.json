@@ -1,21 +1,20 @@
 {
-  "name": "lang",
+  "name": "lang_experiment",
   "version": "1.0.0",
-  "description": "a basic language",
+  "description": "a basic language experiment.",
   "main": "dist/ts/main.js",
   "type": "commonjs",
   "scripts": {
-    "start": "npx tsc && node dist/ts/main.js",
-    "compile": "npx tsc",
-    "installc": "npm install",
-    "env": "fnm env --use-on-cd | Out-String | Invoke-Expression"
+    "start": "npx tsc && node dist/ts/main.js"
   },
   "author": "Mr_Zombii",
   "license": "ISC",
   "directories": {
     "example": "examples"
   },
-  "keywords": [],
+  "keywords": [
+    "Language"
+  ],
   "devDependencies": {
     "typescript": "^5.7.3"
   },
